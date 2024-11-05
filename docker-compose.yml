@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  api:
+    build:
+      context: ./node-api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./node-api:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: 123
+      DB_NAME: bank
+      RABBITMQ_URL: amqp://bank_trans:123@rabbitmq:5672
+    networks:
+      - app-network
+
+  db:
+    image: mysql:8.4
+    container_name: mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=123
+      - MYSQL_DATABASE=bank
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=123
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=bank_trans
+      - RABBITMQ_DEFAULT_PASS=123
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+
+volumes:
+  db_data:
