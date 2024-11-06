@@ -4,3 +4,5 @@ export * from "./transfer-factory";
 export * from "./add-account-factory";
 export * from "./list-accounts-factory";
 export * from "./list-transactions-factory";
+export * from "./add-user-factory";
+export * from "./authentication-factory";
