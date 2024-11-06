@@ -1,4 +1,3 @@
-// src/data/repositories/AccountRepository.integration.spec.ts
 import { DataSource } from "typeorm";
 import { DBAccountRepository } from "./account.repository";
 import { Account as AccountEntity } from "./account.entity";
@@ -20,7 +19,7 @@ describe("AccountRepository Integration Tests", () => {
 
   beforeEach(async () => {
     // Limpa a tabela antes de cada teste para evitar interferência entre eles
-    await dataSource.getRepository(AccountEntity).clear();
+    await dataSource.getRepository(AccountEntity).delete({});
   });
 
   it("Should create a new account and save it in the database", async () => {

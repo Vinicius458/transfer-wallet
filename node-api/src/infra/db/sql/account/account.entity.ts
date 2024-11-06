@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryColumn } from "typeorm";
+import { Entity, Column, PrimaryColumn, OneToOne } from "typeorm";
+import { User } from "../user/user.entity";
 
 @Entity("accounts")
 export class Account {
@@ -10,4 +11,7 @@ export class Account {
 
   @Column({ type: "int" })
   version: number;
+
+  @OneToOne(() => User, (user) => user.account)
+  user: User;
 }
