@@ -7,7 +7,7 @@ import {
 import User from "@/domain/entities/user/user";
 
 const makeSut = () => {
-  const user = new User("any_name", "any_email@mail.com");
+  const user = new User("any_name", "any_email@mail.com", "123");
   user.id = "any_id";
   user.password = "hashed_password";
   const userRepositoryStub: jest.Mocked<UserRepositoryInterface> = {
