@@ -6,7 +6,8 @@ export default class User implements UserInterface {
   private _token: string;
   constructor(
     private _name: string,
-    private _email: string
+    private _email: string,
+    private _accountId: string
   ) {}
 
   set id(key: string) {
@@ -22,6 +23,9 @@ export default class User implements UserInterface {
 
   get email(): string {
     return this._email;
+  }
+  get accountId(): string {
+    return this._accountId;
   }
   set password(hash: string) {
     this._password = hash;
