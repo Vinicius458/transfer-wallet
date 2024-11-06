@@ -5,3 +5,7 @@ export * from "./transaction-strategy";
 export * from "./add-account";
 export * from "./list-accounts";
 export * from "./list-transactions";
+export * from "./add-user";
+export * from "./authentication";
+export * from "./load-user-by-token";
+export * from "./authentication";

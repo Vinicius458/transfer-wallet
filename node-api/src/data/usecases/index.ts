@@ -5,3 +5,4 @@ export * from "./transaction/transaction";
 export * from "./add-account/add-account";
 export * from "./list-accounts/list-accounts";
 export * from "./list-transactions/list-transactions";
+export * from "./user";
