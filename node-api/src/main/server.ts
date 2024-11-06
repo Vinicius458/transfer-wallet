@@ -1,13 +1,17 @@
 import { setupApp } from "./config/app";
 import "dotenv/config";
 import env from "@/main/config/env";
+import dotenv from "dotenv";
 import { TransactionConsumer } from "@/infra/queue/transaction-consumer";
 import { makeTransactionQueue } from "./factories/queue/transactionQueueRepository-factory";
 import { closeRabbitMQ } from "@/infra/queue/rabbitMQConfig";
-
-const port: number = Number(env.port) || 3000;
+import { AppDataSource } from "@/infra/db/sql/config";
+dotenv.config();
+const port = env.port;
 const app = setupApp();
 async function initializeApp() {
+  await AppDataSource.initialize();
+
   const transactionQueueRepository = await makeTransactionQueue();
   const trasactionConsumer = new TransactionConsumer(
     transactionQueueRepository
