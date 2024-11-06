@@ -2,7 +2,8 @@ import { AddUser } from "@/domain/usecases";
 import { AddUserUseCase } from "./add-user";
 import User from "@/domain/entities/user/user";
 import { UserRepositoryInterface } from "@/data/protocols/db/user/user-repository.interface";
-import { Hasher } from "@/data/protocols";
+import { AccountRepository, Hasher } from "@/data/protocols";
+import { Account } from "@/domain/entities";
 
 export const mockUserParams = () => ({
   name: "Joao",
@@ -13,6 +14,17 @@ export const mockUserParams = () => ({
 const HasherMock = (): jest.Mocked<Hasher> => {
   return {
     hash: jest.fn().mockResolvedValue("sh88hs3h9os"),
+  };
+};
+
+let account = new Account(0);
+account.id = "123";
+const AccountMockRepository = (): jest.Mocked<AccountRepository> => {
+  return {
+    findById: jest.fn(),
+    saveAccount: jest.fn().mockResolvedValue(account),
+    list: jest.fn(),
+    updateAccount: jest.fn(),
   };
 };
 const UserMockRepository = (): jest.Mocked<UserRepositoryInterface> => {
@@ -30,16 +42,23 @@ type SutTypes = {
   sut: AddUser;
   hasherMock: jest.Mocked<Hasher>;
   userRepositoryMock: jest.Mocked<UserRepositoryInterface>;
+  accountRepositoryMock: jest.Mocked<AccountRepository>;
 };
 
 const makeSut = (): SutTypes => {
   const hasherMock = HasherMock();
   const userRepositoryMock = UserMockRepository();
-  const sut = new AddUserUseCase(hasherMock, userRepositoryMock);
+  const accountRepositoryMock = AccountMockRepository();
+  const sut = new AddUserUseCase(
+    hasherMock,
+    userRepositoryMock,
+    accountRepositoryMock
+  );
   return {
     sut,
     hasherMock,
     userRepositoryMock,
+    accountRepositoryMock,
   };
 };
 
@@ -60,13 +79,26 @@ describe("Unit test AddUser use case", () => {
     await expect(promise).rejects.toThrow();
   });
 
+  test("Should call SaveAccountRepository with correct values", async () => {
+    const { sut, accountRepositoryMock } = makeSut();
+    const addUserParams = mockUserParams();
+    const accountSpy = jest.spyOn(accountRepositoryMock, "saveAccount");
+
+    await sut.add(addUserParams);
+    expect(accountSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        balance: 0,
+      })
+    );
+  });
+
   test("Should call AddUserRepository with correct values", async () => {
     const { sut, userRepositoryMock } = makeSut();
     const addUserParams = mockUserParams();
     const userSpy = jest.spyOn(userRepositoryMock, "add");
 
     await sut.add(addUserParams);
-    const user = new User(addUserParams.name, addUserParams.email);
+    const user = new User(addUserParams.name, addUserParams.email, account.id);
     user.password = "sh88hs3h9os";
     expect(userSpy).toHaveBeenCalledWith(user);
   });
