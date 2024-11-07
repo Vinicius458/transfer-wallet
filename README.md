@@ -57,9 +57,9 @@ Para configurar e rodar o sistema, siga os passos abaixo:
  4. A aplicação estará disponível na porta 3000.
 
 ## API Endpoints
-1. **POST /api/sign** - Cadastra um usuário e uma conta bancária.
+1. **POST /api/auth/signup** - Cadastra um usuário e uma conta bancária.
    ```bash
-   POST /api/account
+   POST /api/auth/signup
    Content-Type: application/json
 
    {
@@ -76,18 +76,25 @@ Para configurar e rodar o sistema, siga os passos abaixo:
    }
 
 2. **POST api/auth/login** - Acessa a conta do usuário.
-
    ```bash
-   curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "seu-email@example.com", "password": "sua-senha"}'
+    POST /api/auth/login \
+    Content-Type: application/json
+    {
+     "email": "seu-email@example.com",
+     "password": "sua-senha"
+    }
 
-3. **GET /api/account** - Lista todas as contas bancárias. OBS: Está rota é apenas utilizada como demosntrativo, que possibilita acompanhar as contas criadas com os respectivos saldos bancários.
-      ```bash
+3. **GET /api/user?email=email_desejado** - Busca o id do usuário por email. OBS: Está rota é utilizada para que seja possivel enviar os IDs de usuário ao realizar a transação.
+   ```bash
+      GET /api/user?email=email_desejado
+      Content-Type: application/json
+
+4. **GET /api/account** - Lista todas as contas bancárias. OBS: Está rota é apenas utilizada como demosntrativo, que possibilita acompanhar as contas criadas com os respectivos saldos bancários.
+    ```bash
       GET /api/account
       Content-Type: application/json
       
-3. **POST  /api/transaction** - Realiza uma transação bancária, contendo conta, quantidade, tipo de transação e podendo ter conta de destino caso o tipo seja transferência.
+5. **POST  /api/transaction** - Realiza uma transação bancária, contendo conta, quantidade, tipo de transação e podendo ter conta de destino caso o tipo seja transferência.
       ```bash
       POST /api/transaction
       Content-Type: application/json
