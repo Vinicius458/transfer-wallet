@@ -9,7 +9,7 @@ import { auth } from "../middlewares";
 
 export default async (router: Router): Promise<void> => {
   const listAccountsController = await makeListAccountsController();
-  const lloadUserController = await makeLoadUserController();
+  const loadUserController = await makeLoadUserController();
   router.get("/account", adaptRoute(listAccountsController));
-  router.get("/user", auth, adaptRoute(lloadUserController));
+  router.get("/user", auth, adaptRoute(loadUserController));
 };

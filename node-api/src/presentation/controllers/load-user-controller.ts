@@ -14,7 +14,7 @@ export class LoadUserController implements Controller {
       if (error) {
         return badRequest(error);
       }
-      const user = await this.loadUserUseCase.load(request.userId);
+      const user = await this.loadUserUseCase.load(request.email);
       return ok(user);
     } catch (error: any) {
       return serverError(error);
@@ -24,6 +24,6 @@ export class LoadUserController implements Controller {
 
 export namespace LoadUserController {
   export type Request = {
-    userId: string;
+    email: string;
   };
 }
