@@ -2,12 +2,17 @@ import { WithDraw } from "@/domain/usecases";
 import { WithdrawUseCase } from "@/data/usecases";
 import { DBAccountRepository } from "@/infra/db/sql/account/account.repository";
 import { DBTransactionRepository } from "@/infra/db/sql/transaction/transaction.repository";
-import { initializeTestDataSource } from "@/infra/db/sql/config";
-import { DataSource } from "typeorm";
+import { AppDataSource } from "@/infra/db/sql/config";
+import { UserRepository } from "@/infra/db/sql/user/user.repository";
 
 export const makeWithdraw = async (): Promise<WithDraw> => {
-  let dataSource: DataSource = await initializeTestDataSource();
-  const accountRepository = new DBAccountRepository(dataSource);
-  const transactionRepository = new DBTransactionRepository(dataSource);
-  return new WithdrawUseCase(accountRepository, transactionRepository);
+  const accountRepository = new DBAccountRepository(AppDataSource);
+  const transactionRepository = new DBTransactionRepository(AppDataSource);
+  const userRepository = new UserRepository(AppDataSource);
+
+  return new WithdrawUseCase(
+    userRepository,
+    accountRepository,
+    transactionRepository
+  );
 };
