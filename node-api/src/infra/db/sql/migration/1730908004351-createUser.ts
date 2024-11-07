@@ -42,7 +42,7 @@ export class CreateUser1730908004351 implements MigrationInterface {
         ],
         foreignKeys: [
           {
-            columnNames: ["accountId"],
+            columnNames: ["account"],
             referencedTableName: "accounts",
             referencedColumnNames: ["id"],
             onDelete: "CASCADE",
