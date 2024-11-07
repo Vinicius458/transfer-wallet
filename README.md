@@ -82,7 +82,7 @@ Para configurar e rodar o sistema, siga os passos abaixo:
   -H "Content-Type: application/json" \
   -d '{"email": "seu-email@example.com", "password": "sua-senha"}'
 
-3. **GET /api/account** - Lista todas as contas bancárias.
+3. **GET /api/account** - Lista todas as contas bancárias. OBS: Está rota é apenas utilizada como demosntrativo, que possibilita acompanhar as contas criadas com os respectivos saldos bancários.
       ```bash
       GET /api/account
       Content-Type: application/json
@@ -109,7 +109,7 @@ Para configurar e rodar o sistema, siga os passos abaixo:
        "targetAccountId:"456"
       }
 
-4. **GET  /api/transaction** - Lista todas as transações.
+4. **GET  /api/transaction** - Lista todas as transações. OBS: Está rota é apenas utilizada como demosntrativo, que possibilita acompanhar transações realizadas.
    ```bash
    GET /api/transactions
    Content-Type: application/json
