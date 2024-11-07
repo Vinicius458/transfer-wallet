@@ -4,7 +4,7 @@ Este sistema de transações bancárias é uma API que gerencia três tipos de t
 
 ## Estrutura da Arquitetura
 O sistema é dividido em serviços desacoplados que interagem entre si através de APIs e filas de mensagens (RabbitMQ) para garantir a escalabilidade e a confiabilidade. A arquitetura utiliza:
-- Node.js para a implementação da API.
+- Node.js e express para a implementação da API.
 - MySQL como banco de dados relacional para persistência das contas e transações.
 - RabbitMQ para o processamento de eventos e controle de filas.
 - Docker e Docker Compose para orquestração e gerenciamento de contêineres, o que facilita o desenvolvimento e a implantação.
@@ -30,7 +30,7 @@ O sistema é projetado para detectar e tratar falhas de forma proativa. Mecanism
 Para configurar e rodar o sistema, siga os passos abaixo:
 1. Clone o repositório do projeto.
    ```bash
-     git clone https://github.com/seu-usuario/seu-repositorio.git
+     git clone https://github.com/Vinicius458/transfer-wallet.git
    
 2. Crie um arquivo .env com as seguintes variáveis:
    ```bash
@@ -41,6 +41,9 @@ Para configurar e rodar o sistema, siga os passos abaixo:
    DB_PASSWORD=123
    DB_NAME=bank
 
+   # JWT
+   JWT_SECRET: tj67O==5H
+   
    # RabbitMQ
    RABBITMQ_HOST=rabbitmq
    RABBITMQ_URL=amqp://bank_trans:123@rabbitmq:5672
@@ -54,21 +57,32 @@ Para configurar e rodar o sistema, siga os passos abaixo:
  4. A aplicação estará disponível na porta 3000.
 
 ## API Endpoints
-1. **POST /api/account** - Cadastra uma conta bancária com id e saldo.
+1. **POST /api/sign** - Cadastra um usuário e uma conta bancária.
    ```bash
    POST /api/account
    Content-Type: application/json
 
    {
-    "accountId": "123",
-    "balance": 1000.00
+	  "name":"Vinicius",
+	  "email":"vini@mail.com",
+	  "password":"123",
+	  "passwordConfirmation":"123"
    }
    {
-    "accountId": "456",
-    "balance": 500.00
+	  "name":"Luiz",
+	  "email":"luiz@mail.com",
+	  "password":"456",
+	  "passwordConfirmation":"456"
    }
 
-2. **GET /api/account** - Lista todas as contas bancárias.
+2. **POST api/auth/login** - Acessa a conta do usuário.
+
+   ```bash
+   curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "seu-email@example.com", "password": "sua-senha"}'
+
+3. **GET /api/account** - Lista todas as contas bancárias.
       ```bash
       GET /api/account
       Content-Type: application/json
