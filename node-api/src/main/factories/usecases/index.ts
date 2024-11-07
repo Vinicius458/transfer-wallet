@@ -6,3 +6,4 @@ export * from "./list-accounts-factory";
 export * from "./list-transactions-factory";
 export * from "./add-user-factory";
 export * from "./authentication-factory";
+export * from "./load-account-by-token-factory";

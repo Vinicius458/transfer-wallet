@@ -8,4 +8,5 @@ export * from "./list-transactions";
 export * from "./add-user";
 export * from "./authentication";
 export * from "./load-user-by-token";
+export * from "./load-account-by-token";
 export * from "./authentication";
