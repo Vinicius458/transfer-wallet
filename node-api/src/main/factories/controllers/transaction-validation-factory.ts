@@ -1,4 +1,5 @@
 import {
+  CompareFieldsValidation,
   RequiredFieldValidation,
   TransactionTypeValidation,
   ValidationComposite,
@@ -13,6 +14,7 @@ export const makeTransactionValidation = (): ValidationComposite => {
     validations.push(new RequiredFieldValidation(field));
   }
   validations.push(new TransactionTypeValidation("type"));
+  validations.push(new CompareFieldsValidation("accountId", "targetAccountId"));
   validations.push(new ValueFieldValidation("amount"));
   return new ValidationComposite(validations);
 };

@@ -1,9 +1,35 @@
-import { AccountRepository, TransactionRepository } from "@/data/protocols/db";
+import {
+  AccountRepository,
+  TransactionRepository,
+  UserRepositoryInterface,
+} from "@/data/protocols/db";
 import { Transaction, TransactionType } from "@/domain/entities";
 import { Account } from "@/domain/entities";
 import { TransferUseCase } from "./transfer";
+import User from "@/domain/entities/user/user";
 
 describe("TransferUseCase", () => {
+  const mockUserParams1 = () => ({
+    name: "Joao",
+    email: "joao@email.com",
+    password: "senha123",
+  });
+
+  const mockUserParams2 = () => ({
+    name: "Pedro",
+    email: "pedro@email.com",
+    password: "senha123",
+  });
+  const makeUserRepository = (): jest.Mocked<UserRepositoryInterface> => {
+    return {
+      find: jest.fn(),
+      add: jest.fn().mockResolvedValue("hvtvbyvy"),
+      checkByEmail: jest.fn().mockImplementation(() => Promise.resolve(false)),
+      loadByEmail: jest.fn(),
+      loadByToken: jest.fn(),
+      updateAccessToken: jest.fn(),
+    };
+  };
   const makeAccountRepository = (): jest.Mocked<AccountRepository> => ({
     findById: jest.fn(),
     list: jest.fn(),
@@ -52,15 +78,21 @@ describe("TransferUseCase", () => {
   const makeSut = () => {
     const accountRepo = makeAccountRepository();
     const transactionRepo = makeTransactionRepository();
-    const sut = new TransferUseCase(accountRepo, transactionRepo);
-    return { sut, accountRepo, transactionRepo };
+    const userRepo = makeUserRepository();
+    const sut = new TransferUseCase(userRepo, accountRepo, transactionRepo);
+    return { sut, accountRepo, transactionRepo, userRepo };
   };
 
   it("should correctly transfer the amount between accounts", async () => {
-    const { sut, accountRepo, transactionRepo } = makeSut();
+    const { sut, accountRepo, transactionRepo, userRepo } = makeSut();
     const sourceAccount = makeFakeAccount("1", 1000);
     const targetAccount = makeFakeAccount("2", 500);
-
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    userRepo.find.mockResolvedValueOnce(user1);
+    userRepo.find.mockResolvedValueOnce(user2);
     accountRepo.findById.mockResolvedValueOnce(sourceAccount);
     accountRepo.findById.mockResolvedValueOnce(targetAccount);
     accountRepo.updateAccount.mockResolvedValue(true);
@@ -89,8 +121,12 @@ describe("TransferUseCase", () => {
     );
   });
 
-  it("should throw error if source account not found", async () => {
-    const { sut, accountRepo } = makeSut();
+  it("should throw error if source user not found", async () => {
+    const { sut, accountRepo, userRepo } = makeSut();
+    const addUserParams2 = mockUserParams2();
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    userRepo.find.mockResolvedValueOnce(null);
+    userRepo.find.mockResolvedValueOnce(user2);
     accountRepo.findById.mockResolvedValueOnce(null);
 
     await expect(
@@ -99,13 +135,35 @@ describe("TransferUseCase", () => {
         targetAccountId: "2",
         amount: 100,
       })
-    ).rejects.toThrow("Conta de origem não encontrada");
+    ).rejects.toThrow("Source user not found");
   });
 
-  it("should throw error if target account is not found", async () => {
-    const { sut, accountRepo } = makeSut();
-    const sourceAccount = makeFakeAccount("1", 1000);
+  it("should throw error if source account not found", async () => {
+    const { sut, accountRepo, userRepo } = makeSut();
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    userRepo.find.mockResolvedValueOnce(user1);
+    userRepo.find.mockResolvedValueOnce(user2);
+    accountRepo.findById.mockResolvedValueOnce(null);
 
+    await expect(
+      sut.execute({
+        accountId: "1",
+        targetAccountId: "2",
+        amount: 100,
+      })
+    ).rejects.toThrow("Source account not found");
+  });
+
+  it("should throw error if target user is not found", async () => {
+    const { sut, accountRepo, userRepo } = makeSut();
+    const sourceAccount = makeFakeAccount("1", 1000);
+    const addUserParams1 = mockUserParams1();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    userRepo.find.mockResolvedValueOnce(user1);
+    userRepo.find.mockResolvedValueOnce(null);
     accountRepo.findById.mockResolvedValueOnce(sourceAccount);
     accountRepo.findById.mockResolvedValueOnce(null);
 
@@ -115,14 +173,40 @@ describe("TransferUseCase", () => {
         targetAccountId: "2",
         amount: 100,
       })
-    ).rejects.toThrow("Conta de destino não encontrada");
+    ).rejects.toThrow("Target user not found");
+  });
+
+  it("should throw error if target account is not found", async () => {
+    const { sut, accountRepo, userRepo } = makeSut();
+    const sourceAccount = makeFakeAccount("1", 1000);
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    userRepo.find.mockResolvedValueOnce(user1);
+    userRepo.find.mockResolvedValueOnce(user2);
+    accountRepo.findById.mockResolvedValueOnce(sourceAccount);
+    accountRepo.findById.mockResolvedValueOnce(null);
+
+    await expect(
+      sut.execute({
+        accountId: "1",
+        targetAccountId: "2",
+        amount: 100,
+      })
+    ).rejects.toThrow("Target account not found");
   });
 
   it("It should throw an error if it fails to update one of the accounts", async () => {
-    const { sut, accountRepo } = makeSut();
+    const { sut, accountRepo, userRepo } = makeSut();
     const sourceAccount = makeFakeAccount("1", 1000);
     const targetAccount = makeFakeAccount("2", 500);
-
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    userRepo.find.mockResolvedValueOnce(user1);
+    userRepo.find.mockResolvedValueOnce(user2);
     accountRepo.findById.mockResolvedValueOnce(sourceAccount);
     accountRepo.findById.mockResolvedValueOnce(targetAccount);
     accountRepo.updateAccount.mockResolvedValueOnce(true);
@@ -134,15 +218,25 @@ describe("TransferUseCase", () => {
         targetAccountId: "2",
         amount: 100,
       })
-    ).rejects.toThrow("Erro ao atualizar as contas");
+    ).rejects.toThrow("Error updating accounts");
   });
 
   it("Should perform simultaneous transfers while maintaining data consistency", async () => {
-    const { sut, accountRepo } = makeSut();
+    const { sut, accountRepo, userRepo } = makeSut();
     const sourceAccount = makeFakeAccount("1", 1000);
     const targetAccount = makeFakeAccount("2", 500);
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    user1.id = "1";
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    user2.id = "2";
+
     accountRepo.findById.mockImplementation(async (id) => {
       return id === "1" ? sourceAccount : targetAccount;
+    });
+    userRepo.find.mockImplementation(async (id) => {
+      return id === "1" ? user1 : user2;
     });
     accountRepo.updateAccount.mockResolvedValue(true);
 
@@ -165,12 +259,21 @@ describe("TransferUseCase", () => {
   });
 
   it("should throw error on simultaneous transfers with insufficient balance", async () => {
-    const { sut, accountRepo } = makeSut();
+    const { sut, accountRepo, userRepo } = makeSut();
     const sourceAccount = makeFakeAccount("1", 200);
     const targetAccount = makeFakeAccount("2", 500);
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    user1.id = "1";
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    user2.id = "2";
 
     accountRepo.findById.mockImplementation(async (id) => {
       return id === "1" ? sourceAccount : targetAccount;
+    });
+    userRepo.find.mockImplementation(async (id) => {
+      return id === "1" ? user1 : user2;
     });
     accountRepo.updateAccount.mockResolvedValue(true);
 
@@ -190,10 +293,18 @@ describe("TransferUseCase", () => {
   });
 
   it("Should ensure data integrity when detecting update conflict", async () => {
-    const { sut, accountRepo } = makeSut();
+    const { sut, accountRepo, userRepo } = makeSut();
     const sourceAccount = makeFakeAccount("1", 1000);
     const targetAccount = makeFakeAccount("2", 500);
-
+    const addUserParams1 = mockUserParams1();
+    const addUserParams2 = mockUserParams2();
+    const user1 = new User(addUserParams1.name, addUserParams1.email, "1");
+    user1.id = "1";
+    const user2 = new User(addUserParams2.name, addUserParams2.email, "2");
+    user2.id = "2";
+    userRepo.find.mockImplementation(async (id) => {
+      return id === "1" ? user1 : user2;
+    });
     accountRepo.findById.mockImplementation(async (id) => {
       return id === "1" ? sourceAccount : targetAccount;
     });

@@ -18,7 +18,6 @@ describe("AccountRepository Integration Tests", () => {
   });
 
   beforeEach(async () => {
-    // Limpa a tabela antes de cada teste para evitar interferência entre eles
     await dataSource.getRepository(AccountEntity).delete({});
   });
 

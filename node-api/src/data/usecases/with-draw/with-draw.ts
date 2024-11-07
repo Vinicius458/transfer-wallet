@@ -1,21 +1,29 @@
 import { WithDraw } from "@/domain/usecases";
-import { AccountRepository, TransactionRepository } from "@/data/protocols/db";
+import {
+  AccountRepository,
+  TransactionRepository,
+  UserRepositoryInterface,
+} from "@/data/protocols/db";
 import { Transaction, TransactionType } from "@/domain/entities";
 
 export class WithdrawUseCase implements WithDraw {
   constructor(
+    private userRepo: UserRepositoryInterface,
     private accountRepo: AccountRepository,
     private transactionRepo: TransactionRepository
   ) {}
 
   async execute(data: WithDraw.Params): Promise<void> {
     if (data.amount <= 0) {
-      throw new Error("O valor de saque deve ser positivo");
+      throw new Error("The withdrawal amount must be positive");
     }
+
+    const user = await this.userRepo.find(data.accountId);
+    if (!user) throw new Error("User not found");
 
     const account = await this.accountRepo.findById(data.accountId);
     if (!account) {
-      throw new Error("Conta não encontrada");
+      throw new Error("Account not found");
     }
 
     account.debit(data.amount);
@@ -29,7 +37,7 @@ export class WithdrawUseCase implements WithDraw {
     const success = await this.accountRepo.updateAccount(account);
     if (!success) {
       throw new Error(
-        "Erro ao atualizar a conta, possivelmente devido a um conflito de versão"
+        "Error updating account, possibly due to a version conflict"
       );
     }
 
