@@ -8,3 +8,5 @@ export * from "./signup-validation-factory";
 export * from "./signup-controller-factory";
 export * from "./login-controller-factory";
 export * from "./login-validation-factory";
+export * from "./load-user-controller.factory";
+export * from "./load-user-validation-factory";

@@ -4,3 +4,4 @@ export * from "./list-accounts-controller";
 export * from "./list-transactions-cotroller";
 export * from "./signup-controller";
 export * from "./login-controller";
+export * from "./load-user-controller";
